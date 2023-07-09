@@ -6,6 +6,7 @@ import win32gui, win32ui, win32con, win32api
 import threading
 import os
 
+
 class InstanceWindow:
     def __init__(self, instance_name):
         self.instance_name = instance_name
@@ -13,7 +14,7 @@ class InstanceWindow:
         self.selected_window = ""
         self.root = tk.Toplevel(root)
         self.root.title(f"Window Selector - {instance_name}")
-        self.root.geometry(f"+{-180+int(instance_name[-1])*170}+350")
+        self.root.geometry(f"+{-180 + int(instance_name[-1]) * 170}+350")
         # Dropdown Button
         self.dropdown = tk.StringVar(self.root)
         self.dropdown.set("Select a Window")
@@ -51,11 +52,13 @@ class InstanceWindow:
 
     def get_open_windows(self):
         windows = []
+
         def callback(hwnd, windows):
             window_title = win32gui.GetWindowText(hwnd)
             if window_title.strip():  # Exclude empty window names
                 window_id = hwnd
                 windows.append((f"{window_id} - {window_title}"))
+
         win32gui.EnumWindows(callback, windows)
         return windows
 
@@ -64,6 +67,7 @@ class InstanceWindow:
             if win32gui.IsWindowVisible(hwnd) and win32gui.IsWindowEnabled(hwnd):
                 hwnds[win32gui.GetClassName(hwnd)] = hwnd
             return True
+
         hwnds = {}
         win32gui.EnumChildWindows(whndl, callback, hwnds)
         return hwnds
@@ -136,14 +140,20 @@ class InstanceWindow:
             window_id = self.selected_window.split(" - ")[0]
             hwnd = int(window_id)
             win = win32ui.CreateWindowFromHandle(hwnd)
-            hwnd = self.get_inner_windows(hwnd)["Edit"]
+            #hwnd = self.get_inner_windows(hwnd)["Edit"]
             for i in range(10):
                 for keystroke, float1, float2 in self.key_inputs:
                     if self.stop_flag.is_set():
                         print("Execution stopped")
                         return
                     adjusted_delay = random.uniform(float1, float2)
-                    win32api.PostMessage(hwnd, win32con.WM_CHAR, ord(keystroke), 0)
+
+                    ascii_value = ord(keystroke)
+                    hex_representation = int(hex(ascii_value),16)
+                    win32api.PostMessage(hwnd, win32con.WM_KEYDOWN, hex_representation, 0)
+                    sleep(random.randrange(1, 9) / 10)
+                    win32api.PostMessage(hwnd, win32con.WM_KEYUP, hex_representation, 0)
+                    print("Slept for:",adjusted_delay)
                     sleep(adjusted_delay)
 
         print("Execution completed")
@@ -159,8 +169,8 @@ class InstanceWindow:
     def save_to_file(self):
         filename = f"{self.instance_name}.txt"
         with open(filename, "w") as file:
-            for keystroke, delay in self.key_inputs:
-                file.write(f"Key: {keystroke} - Delay Seconds: {delay}\n")
+            for keystroke, float_value_1, float_value_2 in self.key_inputs:
+                file.write(f"Key: {keystroke} - Delay Range: {float_value_1} - {float_value_2}\n")
         print("Saved to file:", filename)
 
     def load_from_file(self):
@@ -169,17 +179,20 @@ class InstanceWindow:
             with open(filename, "r") as file:
                 lines = file.readlines()
                 for line in lines:
-                    if "Key: " in line and " - Delay Seconds: " in line:
-                        keystroke = line.split("Key: ")[1].split(" - Delay Seconds: ")[0].strip()
-                        delay = float(line.split(" - Delay Seconds: ")[1].strip())
-                        self.key_inputs.append((keystroke, delay))
-                        self.keystrokes_list.insert(tk.END, f"Key: {keystroke} - Delay Seconds: {delay}")
+                    if "Key: " in line and " - Delay Range: " in line:
+                        keystroke = line.split("Key: ")[1].split(" - Delay Range: ")[0].strip()
+                        delay_range = line.split(" - Delay Range: ")[1].strip()
+                        float_value_1, float_value_2 = map(float, delay_range.split(" - "))
+                        self.key_inputs.append((keystroke, float_value_1, float_value_2))
+                        self.keystrokes_list.insert(tk.END,
+                                                    f"Key: {keystroke} - Delay Range: {float_value_1} - {float_value_2}")
             print("Loaded from file:", filename)
         else:
             print("File not found:", filename)
 
     def on_dropdown_change(self, *args):
         self.selected_window = self.dropdown.get()
+
 
 def open_instance(instance_name):
     instance_window = InstanceWindow(instance_name)
@@ -200,11 +213,13 @@ instances_row1 = ["Instance 1", "Instance 2", "Instance 3", "Instance 4"]
 instances_row2 = ["Instance 5", "Instance 6", "Instance 7", "Instance 8"]
 
 for instance_name in instances_row1:
-    instance_button = tk.Button(instance_frame1, text=instance_name, command=lambda name=instance_name: open_instance(name))
+    instance_button = tk.Button(instance_frame1, text=instance_name,
+                                command=lambda name=instance_name: open_instance(name))
     instance_button.pack(side=tk.LEFT, padx=10)
 
 for instance_name in instances_row2:
-    instance_button = tk.Button(instance_frame2, text=instance_name, command=lambda name=instance_name: open_instance(name))
+    instance_button = tk.Button(instance_frame2, text=instance_name,
+                                command=lambda name=instance_name: open_instance(name))
     instance_button.pack(side=tk.LEFT, padx=10)
 
 root.mainloop()

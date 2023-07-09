@@ -1,6 +1,6 @@
 import time
 
-from pywinauto import Application
+#from pywinauto import Application
 
 # Example usage
 window_titles = ["File 1 - Not Defteri","File 2 - Not Defteri","File 3 - Not Defteri","File 4 - Not Defteri",]  # Replace with the titles of the text files
@@ -23,10 +23,11 @@ import win32gui, win32ui, win32con, win32api
 
 
 def main():
-    window_name = "*File 1 - Not Defteri"
+    window_name = "World of Warcraft"
     hwnd = win32gui.FindWindow(None, window_name)
+    #list_window_names()
     print(get_inner_windows(hwnd))
-    hwnd = get_inner_windows(hwnd)["Edit"]
+    #hwnd = get_inner_windows(hwnd)["Edit"]
     win = win32ui.CreateWindowFromHandle(hwnd)
 
     #win.SendMessage(win32con.WM_CHAR, ord('A'), 0)
@@ -34,9 +35,17 @@ def main():
     #win.SendMessage(win32con.WM_KEYDOWN, 0x1E, 0)
     #sleep(0.5)
     #win.SendMessage(win32con.WM_KEYUP, 0x1E, 0)
+    ascii_value = ord("1")
+    hex_representation = hex(ascii_value)
+    print(type(hex_representation))
+    print(type(0x31))
+    he=int(hex_representation,16)
     while True:
-        win32api.PostMessage(hwnd, win32con.WM_CHAR, ord('A'), 0)
-        sleep(2)
+        win32api.PostMessage(hwnd, win32con.WM_KEYDOWN, he, 0)
+        time.sleep(1)
+        win32api.PostMessage(hwnd, win32con.WM_KEYUP, he, 0)
+        #win32api.PostMessage(hwnd, win32con.WM_CHAR, ord('1'), 0)
+        #sleep(2)
     # win32api.SendMessage(hwnd, win32con.WM_KEYUP, 0x41, 0)
 
 
