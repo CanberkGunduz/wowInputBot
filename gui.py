@@ -141,7 +141,7 @@ class InstanceWindow:
             hwnd = int(window_id)
             win = win32ui.CreateWindowFromHandle(hwnd)
             #hwnd = self.get_inner_windows(hwnd)["Edit"]
-            for i in range(10):
+            while True:
                 for keystroke, float1, float2 in self.key_inputs:
                     if self.stop_flag.is_set():
                         print("Execution stopped")
@@ -153,8 +153,9 @@ class InstanceWindow:
                     win32api.PostMessage(hwnd, win32con.WM_KEYDOWN, hex_representation, 0)
                     sleep(random.randrange(1, 9) / 10)
                     win32api.PostMessage(hwnd, win32con.WM_KEYUP, hex_representation, 0)
-                    print("Slept for:",adjusted_delay)
+                    #print("Slept for:",adjusted_delay)
                     sleep(adjusted_delay)
+
 
         print("Execution completed")
 
